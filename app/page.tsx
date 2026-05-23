@@ -1,65 +1,150 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useAppStore } from '@/lib/store/useAppStore';
+import { CharacterPicker } from '@/components/ui/CharacterPicker';
+import { SubjectCard } from '@/components/ui/SubjectCard';
+import { StarsBackground } from '@/components/ui/StarsBackground';
+import { Header } from '@/components/layout/Header';
+import { BottomNav } from '@/components/layout/BottomNav';
+import { SUBJECTS } from '@/lib/utils/subjects';
+import { soundManager } from '@/lib/utils/soundManager';
+import { fadeInUp, staggerChildren } from '@/lib/utils/animations';
+import type { Character } from '@/types';
+
+export default function HomePage() {
+  const { character, setCharacter, subjectProgress, settings, updateStreak } = useAppStore();
+  const [step, setStep] = useState<'character' | 'subjects'>(character ? 'subjects' : 'character');
+  const router = useRouter();
+
+  useEffect(() => {
+    soundManager.setEnabled(settings.soundEnabled);
+  }, [settings.soundEnabled]);
+
+  useEffect(() => {
+    updateStreak();
+  }, [updateStreak]);
+
+  const handleCharacterSelect = (c: Character) => {
+    soundManager.play('sparkle');
+    setCharacter(c);
+    setTimeout(() => setStep('subjects'), 400);
+  };
+
+  const handleSubjectClick = () => {
+    soundManager.play('click');
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="relative min-h-dvh flex flex-col">
+      <StarsBackground />
+      <Header />
+
+      <main className="relative z-10 flex-1 px-4 pt-4 pb-32 max-w-lg mx-auto w-full">
+        <AnimatePresence mode="wait">
+          {step === 'character' ? (
+            <motion.div
+              key="character-step"
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="space-y-6"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              {/* Title */}
+              <div className="text-center space-y-2 pt-4">
+                <motion.h1
+                  className="font-magic text-3xl sm:text-4xl text-gold-glow leading-tight"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  Quiz Magique
+                </motion.h1>
+                <motion.p
+                  className="text-white/70 text-base"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  ✨ Choisis ton personnage pour commencer ! ✨
+                </motion.p>
+              </div>
+
+              <CharacterPicker selected={character} onSelect={handleCharacterSelect} />
+
+              {character && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  onClick={() => setStep('subjects')}
+                  className="btn-magic w-full py-4 rounded-2xl font-black text-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, #FFD700, #B8860B)',
+                    color: '#1A0A2E',
+                    boxShadow: '0 0 25px rgba(255,215,0,0.4)',
+                  }}
+                >
+                  C&apos;est parti ! 🪄
+                </motion.button>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="subjects-step"
+              variants={fadeInUp}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="space-y-5"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+              {/* Welcome back */}
+              <div className="text-center pt-2">
+                <h2 className="font-magic text-2xl text-gold-glow mb-1">
+                  Choisis ta matière !
+                </h2>
+                <p className="text-white/60 text-sm">
+                  10 questions • Des sorts et des points t&apos;attendent ✨
+                </p>
+              </div>
+
+              {/* Subject grid */}
+              <motion.div
+                className="grid grid-cols-2 gap-3"
+                variants={staggerChildren}
+                initial="hidden"
+                animate="visible"
+              >
+                {SUBJECTS.map((subject, i) => (
+                  <div key={subject.id} onClick={handleSubjectClick}>
+                    <SubjectCard
+                      subject={subject}
+                      index={i}
+                      bestScore={subjectProgress[subject.id]?.bestScore}
+                      completed={subjectProgress[subject.id]?.completed}
+                    />
+                  </div>
+                ))}
+              </motion.div>
+
+              {/* Change character */}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                onClick={() => setStep('character')}
+                className="w-full text-center text-white/40 text-sm py-2 hover:text-white/70 transition-colors"
+              >
+                Changer de personnage
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
+
+      <BottomNav />
     </div>
   );
 }

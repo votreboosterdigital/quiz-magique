@@ -1,0 +1,60 @@
+import type { SubjectMeta } from '@/types';
+
+export const SUBJECTS: SubjectMeta[] = [
+  {
+    id: 'fr-math',
+    label: 'Maths',
+    emoji: '📐',
+    color: '#7B2FBE',
+    description: 'Additions, multiplications, géométrie...',
+    language: 'fr',
+  },
+  {
+    id: 'fr-francais',
+    label: 'Français',
+    emoji: '📖',
+    color: '#1F4E8C',
+    description: 'Grammaire, conjugaison, orthographe...',
+    language: 'fr',
+  },
+  {
+    id: 'en-english',
+    label: 'English',
+    emoji: '🇬🇧',
+    color: '#20B2AA',
+    description: 'Grammar, spelling, reading...',
+    language: 'en',
+  },
+  {
+    id: 'en-general',
+    label: 'General',
+    emoji: '🌍',
+    color: '#2E8B57',
+    description: 'Science, nature, the world...',
+    language: 'en',
+  },
+  {
+    id: 'hp-trivia',
+    label: 'Harry Potter',
+    emoji: '🧙',
+    color: '#740001',
+    description: 'Poudlard, sorts, personnages...',
+    language: 'both',
+  },
+  {
+    id: 'bsc-trivia',
+    label: 'Baby-Sitters',
+    emoji: '📚',
+    color: '#FF69B4',
+    description: 'Kristy, Claudia, Mary Anne...',
+    language: 'en',
+  },
+  {
+    id: 'mix',
+    label: 'Mix Surprise',
+    emoji: '🎲',
+    color: '#FFD700',
+    description: 'Un mélange de tout !',
+    language: 'both',
+  },
+];
