@@ -25,6 +25,7 @@ export function QuizCard({ question, questionIndex, totalQuestions, onAnswer, di
   const [effectType, setEffectType] = useState<'correct' | 'wrong'>('correct');
   const [showPoints, setShowPoints] = useState(false);
   const [shakeCard, setShakeCard] = useState(false);
+  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
   const answered = selected !== null;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -34,6 +35,7 @@ export function QuizCard({ question, questionIndex, totalQuestions, onAnswer, di
       setSelected(idx);
 
       const isCorrect = idx === question.correct;
+      setIsCorrectAnswer(isCorrect);
 
       const newStates: ButtonState[] = question.options.map((_, i) => {
         if (i === question.correct) return 'revealed';
@@ -45,6 +47,7 @@ export function QuizCard({ question, questionIndex, totalQuestions, onAnswer, di
 
       setEffectType(isCorrect ? 'correct' : 'wrong');
       setShowEffect(true);
+      timerRef.current = setTimeout(() => setShowEffect(false), 1000);
 
       if (isCorrect) {
         soundManager.play('correct');
@@ -55,14 +58,15 @@ export function QuizCard({ question, questionIndex, totalQuestions, onAnswer, di
         setShakeCard(true);
         setTimeout(() => setShakeCard(false), 600);
       }
-
-      timerRef.current = setTimeout(() => {
-        setShowEffect(false);
-        onAnswer(isCorrect, isCorrect ? question.points : 0);
-      }, isCorrect ? 1200 : 1800);
     },
-    [answered, disabled, question, onAnswer]
+    [answered, disabled, question]
   );
+
+  const handleNext = useCallback(() => {
+    if (selected === null) return;
+    soundManager.play('click');
+    onAnswer(isCorrectAnswer, isCorrectAnswer ? question.points : 0);
+  }, [selected, isCorrectAnswer, question.points, onAnswer]);
 
   const btnClass = (i: number): string => {
     const base = 'answer-btn';
@@ -151,23 +155,43 @@ export function QuizCard({ question, questionIndex, totalQuestions, onAnswer, di
           ))}
         </div>
 
-        {/* Explanation */}
+        {/* Explanation + bouton Suivant */}
         <AnimatePresence>
           {answered && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-4 p-3 rounded-xl text-sm font-semibold"
-              style={{
-                background: selected === question.correct
-                  ? 'rgba(34,197,94,0.15)'
-                  : 'rgba(239,68,68,0.15)',
-                border: `1px solid ${selected === question.correct ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`,
-                color: selected === question.correct ? '#86efac' : '#fca5a5',
-              }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mt-4 space-y-3"
             >
-              💡 {question.explanation}
+              <div
+                className="p-3 rounded-xl text-sm font-semibold leading-relaxed"
+                style={{
+                  background: isCorrectAnswer
+                    ? 'rgba(34,197,94,0.15)'
+                    : 'rgba(239,68,68,0.15)',
+                  border: `1px solid ${isCorrectAnswer ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`,
+                  color: isCorrectAnswer ? '#86efac' : '#fca5a5',
+                }}
+              >
+                💡 {question.explanation}
+              </div>
+
+              <motion.button
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.15 }}
+                onClick={handleNext}
+                className="btn-magic w-full py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2"
+                style={{
+                  background: 'linear-gradient(135deg, #7B2FBE, #1F4E8C)',
+                  color: 'white',
+                  boxShadow: '0 0 20px rgba(123,47,190,0.4)',
+                }}
+              >
+                Suivant <span aria-hidden="true">➡️</span>
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
