@@ -6,6 +6,7 @@ import type { AppState, Character, House, Subject, SubjectProgress, Difficulty }
 import { ALL_BADGES } from '@/lib/utils/badges';
 
 interface AppStore extends AppState {
+  setPlayerName: (name: string) => void;
   setCharacter: (character: Character) => void;
   setHouse: (house: House) => void;
   addPoints: (points: number) => void;
@@ -20,6 +21,7 @@ interface AppStore extends AppState {
 }
 
 const DEFAULT_STATE: AppState = {
+  playerName: '',
   character: null,
   house: 'gryffindor',
   totalPoints: 0,
@@ -52,6 +54,8 @@ export const useAppStore = create<AppStore>()(
   persist(
     (set, get) => ({
       ...DEFAULT_STATE,
+
+      setPlayerName: (name) => set({ playerName: name.trim() }),
 
       setCharacter: (character) => {
         const house: House =

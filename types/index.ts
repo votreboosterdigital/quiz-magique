@@ -55,6 +55,7 @@ export interface SubjectProgress {
 }
 
 export interface AppState {
+  playerName: string;
   character: Character | null;
   house: House;
   totalPoints: number;

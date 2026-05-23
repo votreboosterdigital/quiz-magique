@@ -1,14 +1,16 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store/useAppStore';
 import { StarsBackground } from '@/components/ui/StarsBackground';
 import { Header } from '@/components/layout/Header';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { ALL_BADGES } from '@/lib/utils/badges';
 import { SUBJECTS } from '@/lib/utils/subjects';
-import { fadeInUp, staggerChildren } from '@/lib/utils/animations';
+import { fadeInUp, staggerChildren, scaleIn } from '@/lib/utils/animations';
 
 const LEVEL_NAMES = [
   '', 'Élève', 'Apprenti·e', 'Initié·e', 'Sorcier·ière',
@@ -18,7 +20,15 @@ const LEVEL_NAMES = [
 const LEVEL_THRESHOLDS = [0, 0, 100, 250, 500, 800, 1200, 1800, 2500, 3500, 5000];
 
 export default function ProgressPage() {
-  const { totalPoints, level, streakDays, subjectProgress, unlockedBadgeIds, character } = useAppStore();
+  const { totalPoints, level, streakDays, subjectProgress, unlockedBadgeIds, character, playerName, resetProgress } = useAppStore();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const router = useRouter();
+
+  const handleReset = () => {
+    resetProgress();
+    setShowConfirm(false);
+    router.push('/');
+  };
 
   const currentThreshold = LEVEL_THRESHOLDS[level] ?? 0;
   const nextThreshold = LEVEL_THRESHOLDS[level + 1] ?? currentThreshold;
@@ -186,9 +196,89 @@ export default function ProgressPage() {
           </motion.div>
         </motion.div>
 
+        {/* Reset button */}
+        <motion.div
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.3 }}
+        >
+          <button
+            onClick={() => setShowConfirm(true)}
+            className="w-full py-3 rounded-2xl font-bold text-base transition-all"
+            style={{
+              background: 'rgba(239,68,68,0.1)',
+              border: '2px solid rgba(239,68,68,0.3)',
+              color: 'rgba(252,165,165,0.9)',
+            }}
+          >
+            🔄 Remettre à zéro
+          </button>
+        </motion.div>
+
       </main>
 
       <BottomNav />
+
+      {/* Modale de confirmation reset */}
+      <AnimatePresence>
+        {showConfirm && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-[90] bg-black/70 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowConfirm(false)}
+            />
+            <motion.div
+              className="fixed inset-0 z-[95] flex items-center justify-center p-4"
+            >
+              <motion.div
+                variants={scaleIn}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                onClick={(e) => e.stopPropagation()}
+                className="magic-card p-6 max-w-sm w-full text-center space-y-4"
+              >
+                <div className="text-5xl">⚠️</div>
+                <h2 className="font-magic text-xl text-white">
+                  Remettre à zéro ?
+                </h2>
+                <p className="text-white/70 text-sm leading-relaxed">
+                  Tous les points, badges et progrès de{' '}
+                  <span className="text-yellow-400 font-bold">{playerName}</span>{' '}
+                  seront effacés. Cette action est irréversible.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowConfirm(false)}
+                    className="flex-1 py-3 rounded-xl font-bold text-base"
+                    style={{
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '2px solid rgba(255,255,255,0.15)',
+                      color: 'white',
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleReset}
+                    className="flex-1 py-3 rounded-xl font-bold text-base"
+                    style={{
+                      background: 'rgba(239,68,68,0.8)',
+                      color: 'white',
+                    }}
+                  >
+                    Oui, effacer
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

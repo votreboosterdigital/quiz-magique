@@ -10,7 +10,7 @@ const LEVEL_NAMES = [
 ];
 
 export function Header({ title }: { title?: string }) {
-  const { totalPoints, level, character, settings, toggleSound } = useAppStore();
+  const { totalPoints, level, character, playerName, settings, toggleSound } = useAppStore();
 
   const charEmoji =
     character === 'hermione' ? '🧙‍♀️'
@@ -48,8 +48,10 @@ export function Header({ title }: { title?: string }) {
           >
             <span className="text-lg" aria-hidden="true">{charEmoji}</span>
             <div className="flex flex-col leading-none">
-              <span className="text-xs text-yellow-400 font-bold">Niv. {level}</span>
-              <span className="text-xs text-white/60 hidden sm:block">{LEVEL_NAMES[level]}</span>
+              <span className="text-xs text-yellow-400 font-bold">
+                {playerName || 'Niv.'} {!playerName && level}
+              </span>
+              {playerName && <span className="text-xs text-white/60">Niv. {level}</span>}
             </div>
             <span className="text-xs font-black text-yellow-300 ml-1">⚡ {totalPoints}</span>
           </motion.div>
